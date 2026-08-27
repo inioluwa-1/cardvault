@@ -35,9 +35,9 @@ export function BottomNav() {
             <Home className={`w-6 h-6 ${pathname === "/" ? "text-slate-800" : "text-slate-500"}`} strokeWidth={1.5} />
             <span className={`text-[11px] font-medium ${pathname === "/" ? "text-slate-600" : "text-slate-500"}`}>Home</span>
           </Link>
-          <button onClick={() => setIsRedeemOpen(true)} className="flex flex-col items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity w-20 pr-4">
+          <button onClick={() => setIsRedeemOpen(true)} className="flex flex-col items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity w-16">
             <Gift className="w-6 h-6 text-slate-500" strokeWidth={1.5} />
-            <span className="text-[11px] font-medium text-slate-500">Redeem Card</span>
+            <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap text-center">Redeem Card</span>
           </button>
           <Link href="/gift-cards" className={`flex flex-col items-center gap-1.5 transition-opacity w-16 pl-2 ${pathname === "/gift-cards" ? "opacity-100" : "opacity-60 hover:opacity-100"}`}>
             <CreditCard className={`w-6 h-6 ${pathname === "/gift-cards" ? "text-slate-800" : "text-slate-500"}`} strokeWidth={1.5} />
