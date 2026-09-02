@@ -1,9 +1,27 @@
-import { Plus, Home, Gift, CreditCard, Search, MoreVertical } from 'lucide-react';
+"use client";
+
+import { Search, MoreVertical } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BottomNav } from '@/components/BottomNav';
+import { useAppContext } from '@/context/AppContext';
+import { useState } from 'react';
 
 export default function GiftCardsPage() {
+  const { getUserCards } = useAppContext();
+  const userCards = getUserCards("Favour");
+  
+  const [activeTab, setActiveTab] = useState<"All" | "Available" | "Used">("All");
+
+  const filteredCards = userCards.filter(item => {
+    if (activeTab === "Available") return !item.code.isRedeemed;
+    if (activeTab === "Used") return item.code.isRedeemed;
+    return true;
+  });
+
+  const availableCount = userCards.filter(item => !item.code.isRedeemed).length;
+  const usedCount = userCards.filter(item => item.code.isRedeemed).length;
+
   return (
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
@@ -17,91 +35,91 @@ export default function GiftCardsPage() {
             <input 
               type="text" 
               placeholder="Search Gift Card" 
-              className="w-full pl-11 pr-4 py-4 bg-white border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 shadow-sm transition-all"
+              className="w-full pl-11 pr-4 py-4 bg-white border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#694C9D]/20 shadow-sm transition-all"
             />
           </div>
 
           {/* Tabs */}
           <div className="flex gap-3 mb-6 overflow-x-auto no-scrollbar pb-1">
-            <button className="bg-[#694C9D] text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm whitespace-nowrap transition-transform active:scale-95">
-              All (8)
-            </button>
-            <button className="bg-white text-slate-500 hover:text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm whitespace-nowrap border border-slate-100 transition-transform active:scale-95">
-              Available (5)
-            </button>
-            <button className="bg-white text-slate-500 hover:text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm whitespace-nowrap border border-slate-100 transition-transform active:scale-95">
-              Used (3)
-            </button>
+            {(["All", "Available", "Used"] as const).map(tab => {
+              const count = tab === "All" ? userCards.length : tab === "Available" ? availableCount : usedCount;
+              return (
+                <button 
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm whitespace-nowrap transition-transform active:scale-95 ${
+                    activeTab === tab 
+                      ? "bg-[#694C9D] text-white" 
+                      : "bg-white text-slate-500 hover:text-slate-700 border border-slate-100"
+                  }`}
+                >
+                  {tab} ({count})
+                </button>
+              );
+            })}
           </div>
 
           {/* Cards List */}
           <div className="space-y-4">
-            {/* Card 1 */}
-            <Link href="/details" className="block relative w-full h-48 rounded-2xl overflow-hidden shadow-md group">
-              <Image 
-                src="/burger-fries.jpg" 
-                alt="Tasty Bites"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
-              
-              <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                <div className="flex justify-between items-start w-full">
-                  <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                    <span className="text-sm font-medium text-white">Tasty Bites</span>
-                  </div>
-                  <button className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
-                    <MoreVertical className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-                
-                <div className="flex justify-between items-end w-full">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-1 shadow-black/50">Special Treat</h2>
-                    <div className="text-2xl font-bold text-[#b9a3dc]">₦15,000</div>
-                  </div>
-                  <div className="text-[10px] text-white/70 font-mono tracking-wider">
-                    GC-8X7M-KL2P
-                  </div>
-                </div>
+            {filteredCards.length === 0 && (
+              <div className="text-center py-10 text-slate-500">
+                You have no {activeTab !== "All" ? activeTab.toLowerCase() : ""} gift cards.
               </div>
-            </Link>
+            )}
+            
+            {filteredCards.map(({ card, code }, idx) => (
+              <div key={idx} className={`block relative w-full h-48 rounded-2xl overflow-hidden shadow-md group ${code.isRedeemed ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+                <Image 
+                  src={card.bgImage} 
+                  alt={card.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
+                
+                {code.isRedeemed && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                    <div className="bg-white/90 text-slate-900 font-bold px-4 py-2 rounded-lg rotate-12 shadow-xl border border-white">
+                      REDEEMED
+                    </div>
+                  </div>
+                )}
 
-            {/* Card 2 */}
-            <Link href="/details" className="block relative w-full h-48 rounded-2xl overflow-hidden shadow-md group">
-              <Image 
-                src="/burger-fries.jpg" 
-                alt="Tasty Bites"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
-              
-              <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                <div className="flex justify-between items-start w-full">
-                  <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                    <span className="text-sm font-medium text-white">Tasty Bites</span>
+                <div className="absolute inset-0 p-4 flex flex-col justify-between z-0">
+                  <div className="flex justify-between items-start w-full">
+                    {card.logoUrl ? (
+                      <div className="bg-white/90 backdrop-blur-md w-10 h-10 rounded-full border border-white/10 relative overflow-hidden">
+                        <Image src={card.logoUrl} alt="Logo" fill sizes="40px" className="object-cover p-1.5" />
+                      </div>
+                    ) : (
+                      <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                        <span className="text-sm font-medium text-white">Logo</span>
+                      </div>
+                    )}
+                    <button className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
+                      <MoreVertical className="w-4 h-4 text-white" />
+                    </button>
                   </div>
-                  <button className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
-                    <MoreVertical className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-                
-                <div className="flex justify-between items-end w-full">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-1 shadow-black/50">Special Treat</h2>
-                    <div className="text-2xl font-bold text-[#b9a3dc]">₦15,000</div>
-                  </div>
-                  <div className="text-[10px] text-white/70 font-mono tracking-wider">
-                    GC-8X7M-KL2P
+                  
+                  <div className="flex justify-between items-end w-full">
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1 shadow-black/50">{card.name}</h2>
+                      <div className="text-2xl font-bold" style={{ color: card.color || "#b9a3dc" }}>
+                        ₦{card.value.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-white/70 font-mono tracking-wider">
+                      {code.code}
+                    </div>
                   </div>
                 </div>
               </div>
-            </Link>
+            ))}
           </div>
-        </main>
 
+        </main>
+        
         <BottomNav />
       </div>
     </div>

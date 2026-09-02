@@ -24,15 +24,10 @@ const CardsIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const ReportsIcon = ({ className }: { className?: string }) => (
+const SendIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 21c1.5 0 3 1 5 1s4.5-1 6-1V5a2 2 0 0 0-2-2H10L6 7v14z" fill="white" />
-    <path d="M10 3v4H6" />
-    <path d="M9 10h5" />
-    <path d="M9 13h4" />
-    <path d="M9 16h6" />
-    <path d="M5 19c1.5 0 3 1 5 1s4.5-1 6-1" />
-    <path d="M4 17c1.5 0 3 1 5 1s4.5-1 6-1" />
+    <path d="M22 2L11 13" />
+    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
   </svg>
 );
 
@@ -42,7 +37,7 @@ export function VendorBottomNav() {
   return (
     <div className="fixed bottom-0 w-full max-w-md mx-auto left-0 right-0 z-30">
       {/* FAB button */}
-      <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10">
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
         <Link 
           href="/vendor/create"
           className="w-[56px] h-[56px] bg-[#694C9D] rounded-full flex items-center justify-center text-white shadow-[0_8px_20px_rgba(105,76,157,0.4)] hover:scale-105 active:scale-95 transition-transform border-[4px] border-[#eef0f5]"
@@ -62,9 +57,9 @@ export function VendorBottomNav() {
           <span className={`text-[13px] font-serif ${pathname === "/vendor/cards" ? "text-[#7a839e]" : "text-[#9ca3af]"}`}>My cards</span>
         </Link>
 
-        <Link href="/vendor/reports" className={`flex flex-col items-center gap-2 transition-opacity w-16 ${pathname === "/vendor/reports" ? "opacity-100" : "opacity-70 hover:opacity-100"}`}>
-          <ReportsIcon className={`w-7 h-7 ${pathname === "/vendor/reports" ? "text-[#101828]" : "text-[#101828]"}`} />
-          <span className={`text-[13px] font-serif ${pathname === "/vendor/reports" ? "text-[#7a839e]" : "text-[#9ca3af]"}`}>Reports</span>
+        <Link href="/vendor/send" className={`flex flex-col items-center justify-center gap-1.5 transition-all w-[72px] h-[64px] rounded-[16px] ${pathname === "/vendor/send" ? "bg-[#efe8fa]" : "opacity-70 hover:opacity-100"}`}>
+          <SendIcon className={`w-7 h-7 ${pathname === "/vendor/send" ? "text-[#694C9D]" : "text-[#101828]"}`} />
+          <span className={`text-[12px] font-serif whitespace-nowrap ${pathname === "/vendor/send" ? "text-[#694C9D]" : "text-[#9ca3af]"}`}>Send Card</span>
         </Link>
       </div>
     </div>

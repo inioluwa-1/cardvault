@@ -4,8 +4,15 @@ import { Search, ChevronDown, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { VendorBottomNav } from "@/components/VendorBottomNav";
+import { ShareCardModal } from "@/components/ShareCardModal";
+import { useState } from "react";
+import { useAppContext, GiftCard } from "@/context/AppContext";
 
 export default function VendorCardsPage() {
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<GiftCard | undefined>(undefined);
+  const { vendorCards } = useAppContext();
+
   return (
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
@@ -41,152 +48,103 @@ export default function VendorCardsPage() {
           {/* Cards List */}
           <div className="space-y-5">
             
-            {/* Card Item 1 */}
-            <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100">
-              
-              {/* Image Preview Area */}
-              <Link href="/vendor/details" className="block relative w-full h-[180px] rounded-[16px] overflow-hidden group bg-slate-900 mb-5">
-                <Image 
-                  src="/burger-fries.jpg" 
-                  alt="Background"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
-                
-                {/* Active Badge */}
-                <div className="absolute top-4 right-4 bg-[#4ADE80] text-slate-900 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                  Active
-                </div>
+            {vendorCards.length === 0 && (
+              <div className="text-center text-slate-500 mt-10">No cards created yet.</div>
+            )}
 
-                <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                  <div className="flex justify-between items-start w-full">
-                    <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 mt-1">
-                      <span className="text-[13px] font-medium text-white">Tasty Bites</span>
-                    </div>
-                  </div>
+            {vendorCards.map((card) => {
+              const claimedCount = card.codes.filter(c => c.isClaimed).length;
+              const redeemedCount = card.codes.filter(c => c.isRedeemed).length;
+
+              return (
+                <div key={card.id} className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100">
                   
-                  <div className="flex justify-between items-end w-full">
-                    <div>
-                      <h2 className="text-2xl font-bold text-white mb-0.5 shadow-black/50">
-                        Special Treat
-                      </h2>
-                      <div className="text-2xl font-bold text-[#b9a3dc]">
-                        ₦15,000
+                  {/* Image Preview Area */}
+                  <Link href={`/vendor/details?id=${card.id}`} className="block relative w-full h-[180px] rounded-[16px] overflow-hidden group bg-slate-900 mb-5">
+                    <Image 
+                      src={card.bgImage} 
+                      alt="Background"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 400px"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
+                    
+                    {/* Active Badge */}
+                    <div className="absolute top-4 right-4 bg-[#4ADE80] text-slate-900 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                      Active
+                    </div>
+
+                    <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                      <div className="flex justify-between items-start w-full">
+                        {card.logoUrl ? (
+                           <div className="bg-white/90 backdrop-blur-md w-8 h-8 rounded-full border border-white/10 relative overflow-hidden mt-1">
+                             <Image src={card.logoUrl} alt="Logo" fill sizes="32px" className="object-cover p-1" />
+                           </div>
+                        ) : (
+                          <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 mt-1">
+                            <span className="text-[13px] font-medium text-white">Logo</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-end w-full">
+                        <div>
+                          <h2 className="text-2xl font-bold text-white mb-0.5 shadow-black/50">
+                            {card.name}
+                          </h2>
+                          <div className="text-2xl font-bold" style={{ color: card.color || "#b9a3dc" }}>
+                            ₦{card.value.toLocaleString()}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </Link>
+                  </Link>
 
-              {/* Stats & Actions */}
-              <div>
-                <div className="grid grid-cols-2 gap-4 mb-5 px-1">
+                  {/* Stats & Actions */}
                   <div>
-                    <div className="text-[12px] text-slate-400 mb-0.5">Value</div>
-                    <div className="text-[17px] font-semibold text-slate-900">₦15,000</div>
-                  </div>
-                  <div>
-                    <div className="text-[12px] text-slate-400 mb-0.5">Discount Price</div>
-                    <div className="text-[17px] font-semibold text-slate-900">₦13,000</div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-end px-1">
-                  <div className="flex gap-6">
-                    <div>
-                      <div className="text-[12px] text-slate-400 mb-0.5">Collected</div>
-                      <div className="text-[15px] font-semibold text-slate-900">80/100</div>
-                    </div>
-                    <div>
-                      <div className="text-[12px] text-slate-400 mb-0.5">Redeemed</div>
-                      <div className="text-[15px] font-semibold text-slate-900">52</div>
-                    </div>
-                  </div>
-                  <button className="bg-[#694C9D] text-white px-6 py-3 rounded-[12px] font-medium text-sm hover:bg-[#52337a] transition-colors shadow-sm active:scale-95">
-                    Share Card
-                  </button>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Card Item 2 */}
-            <div className="bg-white rounded-[24px] p-4 shadow-sm border border-slate-100">
-              
-              {/* Image Preview Area */}
-              <Link href="/vendor/details" className="block relative w-full h-[180px] rounded-[16px] overflow-hidden group bg-slate-900 mb-5">
-                <Image 
-                  src="/burger-fries.jpg" 
-                  alt="Background"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
-                
-                {/* Active Badge */}
-                <div className="absolute top-4 right-4 bg-[#4ADE80] text-slate-900 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                  Active
-                </div>
-
-                <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                  <div className="flex justify-between items-start w-full">
-                    <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 mt-1">
-                      <span className="text-[13px] font-medium text-white">Tasty Bites</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-end w-full">
-                    <div>
-                      <h2 className="text-2xl font-bold text-white mb-0.5 shadow-black/50">
-                        Special Treat
-                      </h2>
-                      <div className="text-2xl font-bold text-[#b9a3dc]">
-                        ₦15,000
+                    <div className="grid grid-cols-2 gap-4 mb-5 px-1">
+                      <div>
+                        <div className="text-[12px] text-slate-400 mb-0.5">Value</div>
+                        <div className="text-[17px] font-semibold text-slate-900">₦{card.value.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-[12px] text-slate-400 mb-0.5">Discount Price</div>
+                        <div className="text-[17px] font-semibold text-slate-900">₦{card.discountPrice.toLocaleString()}</div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </Link>
 
-              {/* Stats & Actions */}
-              <div>
-                <div className="grid grid-cols-2 gap-4 mb-5 px-1">
-                  <div>
-                    <div className="text-[12px] text-slate-400 mb-0.5">Value</div>
-                    <div className="text-[17px] font-semibold text-slate-900">₦15,000</div>
-                  </div>
-                  <div>
-                    <div className="text-[12px] text-slate-400 mb-0.5">Discount Price</div>
-                    <div className="text-[17px] font-semibold text-slate-900">₦13,000</div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-end px-1">
-                  <div className="flex gap-6">
-                    <div>
-                      <div className="text-[12px] text-slate-400 mb-0.5">Collected</div>
-                      <div className="text-[15px] font-semibold text-slate-900">80/100</div>
-                    </div>
-                    <div>
-                      <div className="text-[12px] text-slate-400 mb-0.5">Redeemed</div>
-                      <div className="text-[15px] font-semibold text-slate-900">52</div>
+                    <div className="flex justify-between items-end px-1">
+                      <div className="flex gap-6">
+                        <div>
+                          <div className="text-[12px] text-slate-400 mb-0.5">Collected</div>
+                          <div className="text-[15px] font-semibold text-slate-900">{claimedCount}/{card.quantity}</div>
+                        </div>
+                        <div>
+                          <div className="text-[12px] text-slate-400 mb-0.5">Redeemed</div>
+                          <div className="text-[15px] font-semibold text-slate-900">{redeemedCount}</div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setSelectedCard(card);
+                          setIsShareOpen(true);
+                        }} 
+                        className="bg-[#694C9D] text-white px-6 py-3 rounded-[12px] font-medium text-sm hover:bg-[#52337a] transition-colors shadow-sm active:scale-95"
+                      >
+                        Share Card
+                      </button>
                     </div>
                   </div>
-                  <button className="bg-[#694C9D] text-white px-6 py-3 rounded-[12px] font-medium text-sm hover:bg-[#52337a] transition-colors shadow-sm active:scale-95">
-                    Share Card
-                  </button>
-                </div>
-              </div>
 
-            </div>
-            
+                </div>
+              );
+            })}
           </div>
         </main>
 
         <VendorBottomNav />
+        <ShareCardModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} card={selectedCard} />
       </div>
     </div>
   );

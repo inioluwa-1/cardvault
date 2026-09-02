@@ -1,9 +1,55 @@
+"use client";
+
 import { CalendarPlus, Share2, Store, CheckCircle2, Gift, CreditCard, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { VendorBottomNav } from '@/components/VendorBottomNav';
+import { useAppContext } from '@/context/AppContext';
 
 export default function VendorDashboard() {
+  const { vendorCards } = useAppContext();
+
+  let totalBudget = 0;
+  let totalCreated = 0;
+  let totalShared = 0;
+  let totalRedeemed = 0;
+
+  const allActivity: any[] = [];
+
+  vendorCards.forEach(card => {
+    totalBudget += card.value * card.quantity;
+    totalCreated += card.quantity;
+    
+    card.codes.forEach(code => {
+      if (code.isClaimed) totalShared++;
+      if (code.isRedeemed) totalRedeemed++;
+
+      if (code.isRedeemed) {
+        allActivity.push({
+          type: 'redeemed',
+          code: code.code,
+          card: card,
+          user: code.claimedBy || "Unknown",
+          date: new Date(code.redeemedAt || 0)
+        });
+      } else if (code.isClaimed) {
+        allActivity.push({
+          type: 'claimed',
+          code: code.code,
+          card: card,
+          user: code.claimedBy || "Unknown",
+          date: new Date(code.claimedAt || 0)
+        });
+      }
+    });
+  });
+
+  const remainingCards = totalCreated - totalShared;
+
+  // Sort by date descending
+  allActivity.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const recentActivity = allActivity.slice(0, 5);
+
   return (
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
@@ -14,7 +60,7 @@ export default function VendorDashboard() {
           <div className="relative w-full h-36 rounded-[24px] overflow-hidden shadow-sm mb-6 flex flex-col justify-center px-6 border border-slate-200/60 bg-gradient-to-br from-[#e6dcf3] to-[#d4c1ea]">
             <div className="relative z-10">
               <div className="text-[13px] font-medium text-slate-600 mb-1">Total Budget (Gift Cards)</div>
-              <div className="text-3xl font-bold text-[#694C9D]">₦1,004,000</div>
+              <div className="text-3xl font-bold text-[#694C9D]">₦{totalBudget.toLocaleString()}</div>
             </div>
             {/* Wavy background graphic simulation */}
             <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{
@@ -33,7 +79,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="text-[12px] text-slate-500 font-medium mb-0.5">Created Cards</div>
-                <div className="text-xl font-bold text-slate-900">1,250</div>
+                <div className="text-xl font-bold text-slate-900">{totalCreated.toLocaleString()}</div>
               </div>
             </div>
 
@@ -44,7 +90,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="text-[12px] text-slate-500 font-medium mb-0.5">Shared to customers</div>
-                <div className="text-xl font-bold text-slate-900">980</div>
+                <div className="text-xl font-bold text-slate-900">{totalShared.toLocaleString()}</div>
               </div>
             </div>
 
@@ -55,7 +101,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="text-[12px] text-slate-500 font-medium mb-0.5">Redeemed Cards</div>
-                <div className="text-xl font-bold text-slate-900">620</div>
+                <div className="text-xl font-bold text-slate-900">{totalRedeemed.toLocaleString()}</div>
               </div>
             </div>
 
@@ -66,7 +112,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="text-[12px] text-slate-500 font-medium mb-0.5">Remaining Cards</div>
-                <div className="text-xl font-bold text-slate-900">360</div>
+                <div className="text-xl font-bold text-slate-900">{remainingCards.toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -78,65 +124,43 @@ export default function VendorDashboard() {
               <button className="text-[13px] font-medium text-slate-500 hover:text-slate-800 transition-colors">View All</button>
             </div>
 
-            {/* List Item 1 */}
-            <Link href="/vendor/details" className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0 first:pt-2 hover:bg-slate-50 transition-colors rounded-lg px-2 -mx-2">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#f4effa] flex items-center justify-center shrink-0">
-                  <CreditCard className="w-5 h-5 text-[#694C9D]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-[15px]">GC-8X7M-KL2P</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#528d25]"></div>
-                    <p className="text-[12px] text-slate-500">Redeemed by John D.</p>
-                  </div>
-                </div>
+            {recentActivity.length === 0 ? (
+              <div className="text-center py-6 text-slate-400 text-sm">
+                No activity found.
               </div>
-              <div className="text-right">
-                <div className="font-bold text-slate-900 text-[15px]">₦15,000</div>
-                <div className="text-[12px] text-slate-400 mt-0.5 font-medium">2m ago</div>
+            ) : (
+              <div className="space-y-0">
+                {recentActivity.map((activity, idx) => (
+                  <Link href={`/vendor/details?id=${activity.card.id}`} key={idx} className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0 first:pt-2 hover:bg-slate-50 transition-colors rounded-lg px-2 -mx-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-full bg-[#f4effa] flex items-center justify-center shrink-0">
+                        {activity.type === 'redeemed' ? (
+                          <CreditCard className="w-5 h-5 text-[#694C9D]" />
+                        ) : (
+                          <Gift className="w-5 h-5 text-[#694C9D]" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 text-[15px]">{activity.code}</h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className={`w-1.5 h-1.5 rounded-full ${activity.type === 'redeemed' ? 'bg-[#528d25]' : 'bg-slate-300'}`}></div>
+                          <p className="text-[12px] text-slate-500">
+                            {activity.type === 'redeemed' ? 'Redeemed by ' : 'Given to user by '} 
+                            {activity.user}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-slate-900 text-[15px]">₦{activity.card.value.toLocaleString()}</div>
+                      <div className="text-[12px] text-slate-400 mt-0.5 font-medium">
+                        {activity.date.toLocaleDateString()}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            </Link>
-
-            {/* List Item 2 */}
-            <Link href="/vendor/details" className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors rounded-lg px-2 -mx-2">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#f4effa] flex items-center justify-center shrink-0">
-                  <Gift className="w-5 h-5 text-[#694C9D]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-[15px]">GC-3HRQ-WE4R</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <p className="text-[12px] text-slate-500">Given to user by Mary J.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-slate-900 text-[15px]">₦20,000</div>
-                <div className="text-[12px] text-slate-400 mt-0.5 font-medium">15m ago</div>
-              </div>
-            </Link>
-
-            {/* List Item 3 */}
-            <Link href="/vendor/details" className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors rounded-lg px-2 -mx-2">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#f4effa] flex items-center justify-center shrink-0">
-                  <CreditCard className="w-5 h-5 text-[#694C9D]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-[15px]">GC-7PZN-BMBT</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#528d25]"></div>
-                    <p className="text-[12px] text-slate-500">Redeemed by Mike B.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-slate-900 text-[15px]">₦10,000</div>
-                <div className="text-[12px] text-slate-400 mt-0.5 font-medium">1h ago</div>
-              </div>
-            </Link>
-            
+            )}
           </div>
         </main>
 

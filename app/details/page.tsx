@@ -23,6 +23,7 @@ export default function GiftCardDetails() {
               src="/burger-fries.jpg" 
               alt="Tasty Bites"
               fill
+              sizes="(max-width: 768px) 100vw, 400px"
               className="object-cover"
               priority
             />

@@ -4,14 +4,17 @@ import { ArrowLeft, Calendar, Download, Check, MoreVertical } from "lucide-react
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef } from "react";
+import { useAppContext } from "@/context/AppContext";
 
 export default function CreateGiftCard() {
+  const { createCard } = useAppContext();
   const [cardName, setCardName] = useState("");
   const [value, setValue] = useState("");
   const [discount, setDiscount] = useState("");
   const [expiry, setExpiry] = useState("");
   const [quantity, setQuantity] = useState("");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [createdCardId, setCreatedCardId] = useState("");
   
   // Custom logo (URL)
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -53,6 +56,25 @@ export default function CreateGiftCard() {
     }
   };
 
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cardName || !value || !quantity) return;
+
+    const newId = createCard({
+      name: cardName,
+      value: Number(value),
+      discountPrice: Number(discount || value),
+      expiryDate: expiry || "No expiry",
+      quantity: Number(quantity),
+      bgImage: bgImage,
+      logoUrl: logoUrl || undefined,
+      color: selectedColor,
+    });
+
+    setCreatedCardId(newId);
+    setShowSuccessPopup(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative shadow-2xl sm:border-x sm:border-slate-200 flex flex-col">
@@ -68,7 +90,7 @@ export default function CreateGiftCard() {
         {/* Scrollable Form Content */}
         <div className="px-5 pb-32 overflow-y-auto no-scrollbar flex-1">
           
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleCreate}>
             {/* Card Name */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Card Name</label>
@@ -283,8 +305,8 @@ export default function CreateGiftCard() {
         {/* Sticky Footer */}
         <div className="absolute bottom-0 w-full left-0 right-0 bg-[#eef0f5]/80 backdrop-blur-md p-5 pb-8 sm:pb-5 border-t border-slate-200/50 z-20">
           <button 
-            type="button" 
-            onClick={() => setShowSuccessPopup(true)}
+            type="submit"
+            onClick={handleCreate}
             className="w-full bg-[#694C9D] text-white font-medium rounded-[16px] py-4 hover:bg-[#52337a] transition-colors shadow-lg shadow-[#694C9D]/20 active:scale-[0.98]"
           >
             Create Card
@@ -303,7 +325,7 @@ export default function CreateGiftCard() {
                 Your new gift card has been generated successfully and is ready to be shared.
               </p>
               <Link 
-                href="/vendor/details" 
+                href={`/vendor/details?id=${createdCardId}`} 
                 className="w-full bg-[#694C9D] text-white font-medium rounded-[16px] py-4 hover:bg-[#52337a] transition-colors mb-3 block"
               >
                 View Card
