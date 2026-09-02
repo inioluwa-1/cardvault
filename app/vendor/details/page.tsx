@@ -3,12 +3,12 @@
 import { ArrowLeft, Check, Copy, Search } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppContext, GiftCard } from "@/context/AppContext";
 import { ShareCardModal } from "@/components/ShareCardModal";
 
-export default function VendorCardDetails() {
+function VendorCardDetailsContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const { vendorCards } = useAppContext();
@@ -248,5 +248,13 @@ export default function VendorCardDetails() {
         <ShareCardModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} card={card} />
       </div>
     </div>
+  );
+}
+
+export default function VendorCardDetails() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#eef0f5] flex items-center justify-center"><div className="text-slate-500">Loading...</div></div>}>
+      <VendorCardDetailsContent />
+    </Suspense>
   );
 }
