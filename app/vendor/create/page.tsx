@@ -42,17 +42,53 @@ export default function CreateGiftCard() {
   ];
   const [selectedColor, setSelectedColor] = useState(colors[0].value);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper to compress and convert image files to clean, persistent base64 data URLs
+  const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", quality));
+          } else {
+            resolve((event.target?.result as string) || "");
+          }
+        };
+        img.onerror = () => resolve((event.target?.result as string) || "");
+        img.src = (event.target?.result as string) || "";
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setLogoUrl(URL.createObjectURL(file));
+      const base64 = await compressImage(file, 200, 0.85);
+      if (base64) setLogoUrl(base64);
     }
   };
 
-  const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setBgImage(URL.createObjectURL(file));
+      const base64 = await compressImage(file, 800, 0.8);
+      if (base64) setBgImage(base64);
     }
   };
 
@@ -170,7 +206,7 @@ export default function CreateGiftCard() {
                 className="w-[140px] h-[100px] bg-white border-2 border-dashed border-slate-200 rounded-[16px] flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-[#694C9D] hover:text-[#694C9D] transition-colors shadow-sm overflow-hidden relative"
               >
                 {logoUrl ? (
-                  <Image src={logoUrl} alt="Brand Logo" fill sizes="140px" className="object-contain p-2" />
+                  <Image src={logoUrl} alt="Brand Logo" fill sizes="140px" className="object-contain p-2" unoptimized />
                 ) : (
                   <>
                     <Download className="w-8 h-8" strokeWidth={1.5} />
@@ -258,10 +294,11 @@ export default function CreateGiftCard() {
                 {/* Background Image */}
                 <Image 
                   src={bgImage} 
-                  alt="Background"
-                  fill
+                  alt="Background" 
+                  fill 
                   sizes="(max-width: 768px) 100vw, 400px"
                   priority
+                  unoptimized
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
@@ -270,7 +307,7 @@ export default function CreateGiftCard() {
                   <div className="flex justify-between items-start w-full">
                     {logoUrl ? (
                       <div className="bg-white/90 backdrop-blur-md w-10 h-10 rounded-full border border-white/10 relative overflow-hidden">
-                        <Image src={logoUrl} alt="Logo" fill sizes="40px" className="object-cover" />
+                        <Image src={logoUrl} alt="Logo" fill sizes="40px" className="object-cover" unoptimized />
                       </div>
                     ) : (
                       <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">

@@ -13,20 +13,24 @@ export default function GiftCardsPage() {
   
   const [activeTab, setActiveTab] = useState<"All" | "Available" | "Used">("All");
 
+  const isCardUsed = (item: { card: any; code: any }) => 
+    item.code.isRedeemed || (typeof item.code.currentBalance === 'number' && item.code.currentBalance <= 0);
+
   const filteredCards = userCards.filter(item => {
-    if (activeTab === "Available") return !item.code.isRedeemed;
-    if (activeTab === "Used") return item.code.isRedeemed;
+    const isUsed = isCardUsed(item);
+    if (activeTab === "Available") return !isUsed;
+    if (activeTab === "Used") return isUsed;
     return true;
   });
 
-  const availableCount = userCards.filter(item => !item.code.isRedeemed).length;
-  const usedCount = userCards.filter(item => item.code.isRedeemed).length;
+  const availableCount = userCards.filter(item => !isCardUsed(item)).length;
+  const usedCount = userCards.filter(item => isCardUsed(item)).length;
 
   return (
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
         
-        <main className="px-5 pt-12 pb-32 h-full overflow-y-auto no-scrollbar">
+        <main className="px-5 pt-12 pb-32 h-full overflow-y-auto overflow-x-hidden no-scrollbar">
           {/* Search */}
           <div className="relative mb-6">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -68,12 +72,17 @@ export default function GiftCardsPage() {
             )}
             
             {filteredCards.map(({ card, code }, idx) => (
-              <div key={idx} className={`block relative w-full h-48 rounded-2xl overflow-hidden shadow-md group ${code.isRedeemed ? 'opacity-60 grayscale-[0.5]' : ''}`}>
+              <Link 
+                href={`/details?code=${code.code}`}
+                key={idx} 
+                className={`block relative w-full h-48 rounded-2xl overflow-hidden shadow-md group ${code.isRedeemed ? 'opacity-60 grayscale-[0.5]' : ''} active:scale-[0.99] transition-transform`}
+              >
                 <Image 
-                  src={card.bgImage} 
+                  src={card.bgImage || "/burger-fries.jpg"} 
                   alt={card.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 400px"
+                  unoptimized
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
@@ -90,14 +99,18 @@ export default function GiftCardsPage() {
                   <div className="flex justify-between items-start w-full">
                     {card.logoUrl ? (
                       <div className="bg-white/90 backdrop-blur-md w-10 h-10 rounded-full border border-white/10 relative overflow-hidden">
-                        <Image src={card.logoUrl} alt="Logo" fill sizes="40px" className="object-cover p-1.5" />
+                        <Image src={card.logoUrl} alt="Logo" fill sizes="40px" className="object-cover p-1.5" unoptimized />
                       </div>
                     ) : (
                       <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                         <span className="text-sm font-medium text-white">Logo</span>
                       </div>
                     )}
-                    <button className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
+                    <button 
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors"
+                    >
                       <MoreVertical className="w-4 h-4 text-white" />
                     </button>
                   </div>
@@ -106,7 +119,7 @@ export default function GiftCardsPage() {
                     <div>
                       <h2 className="text-2xl font-bold text-white mb-1 shadow-black/50">{card.name}</h2>
                       <div className="text-2xl font-bold" style={{ color: card.color || "#b9a3dc" }}>
-                        ₦{card.value.toLocaleString()}
+                        ₦{(typeof code.currentBalance === 'number' ? code.currentBalance : card.value).toLocaleString()}
                       </div>
                     </div>
                     <div className="text-[10px] text-white/70 font-mono tracking-wider">
@@ -114,7 +127,7 @@ export default function GiftCardsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 

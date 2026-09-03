@@ -54,7 +54,7 @@ export default function VendorDashboard() {
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
         
-        <main className="px-5 pt-8 pb-32 h-full overflow-y-auto no-scrollbar">
+        <main className="px-5 pt-8 pb-32 h-full overflow-y-auto overflow-x-hidden no-scrollbar">
           
           {/* Top Banner Card */}
           <div className="relative w-full h-36 rounded-[24px] overflow-hidden shadow-sm mb-6 flex flex-col justify-center px-6 border border-slate-200/60 bg-gradient-to-br from-[#e6dcf3] to-[#d4c1ea]">
@@ -121,7 +121,9 @@ export default function VendorDashboard() {
           <div className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 mb-4">
             <div className="flex justify-between items-center mb-4 px-1">
               <h2 className="text-lg font-semibold text-slate-800">Recent Activity</h2>
-              <button className="text-[13px] font-medium text-slate-500 hover:text-slate-800 transition-colors">View All</button>
+              <Link href="/vendor/activity" className="text-[13px] font-medium text-[#694C9D] hover:text-[#52337a] transition-colors">
+                View All
+              </Link>
             </div>
 
             {recentActivity.length === 0 ? (
@@ -133,8 +135,17 @@ export default function VendorDashboard() {
                 {recentActivity.map((activity, idx) => (
                   <Link href={`/vendor/details?id=${activity.card.id}`} key={idx} className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0 first:pt-2 hover:bg-slate-50 transition-colors rounded-lg px-2 -mx-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-[#f4effa] flex items-center justify-center shrink-0">
-                        {activity.type === 'redeemed' ? (
+                      <div className="w-11 h-11 rounded-xl bg-[#f4effa] overflow-hidden flex items-center justify-center shrink-0 relative border border-slate-100">
+                        {activity.card.logoUrl ? (
+                          <Image 
+                            src={activity.card.logoUrl} 
+                            alt={activity.card.name} 
+                            fill 
+                            sizes="44px" 
+                            unoptimized 
+                            className="object-contain p-1.5" 
+                          />
+                        ) : activity.type === 'redeemed' ? (
                           <CreditCard className="w-5 h-5 text-[#694C9D]" />
                         ) : (
                           <Gift className="w-5 h-5 text-[#694C9D]" />

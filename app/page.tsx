@@ -13,13 +13,18 @@ export default function AppHome() {
 
   const [activeTab, setActiveTab] = useState<"All" | "Available" | "Used">("All");
 
-  const totalValue = userCards.reduce((sum, item) => sum + item.card.value, 0);
-  const availableCount = userCards.filter(item => !item.code.isRedeemed).length;
-  const usedCount = userCards.filter(item => item.code.isRedeemed).length;
+  const totalValue = userCards.reduce((sum, item) => {
+    if (item.code.isRedeemed) return sum;
+    const bal = typeof item.code.currentBalance === 'number' ? item.code.currentBalance : item.card.value;
+    return sum + bal;
+  }, 0);
+  const availableCount = userCards.filter(item => !item.code.isRedeemed && (typeof item.code.currentBalance !== 'number' || item.code.currentBalance > 0)).length;
+  const usedCount = userCards.filter(item => item.code.isRedeemed || (typeof item.code.currentBalance === 'number' && item.code.currentBalance <= 0)).length;
 
   const filteredCards = userCards.filter(item => {
-    if (activeTab === "Available") return !item.code.isRedeemed;
-    if (activeTab === "Used") return item.code.isRedeemed;
+    const isUsed = item.code.isRedeemed || (typeof item.code.currentBalance === 'number' && item.code.currentBalance <= 0);
+    if (activeTab === "Available") return !isUsed;
+    if (activeTab === "Used") return isUsed;
     return true;
   });
 
@@ -27,7 +32,7 @@ export default function AppHome() {
     <div className="min-h-screen bg-[#eef0f5] text-slate-900 font-sans">
       <div className="max-w-md mx-auto bg-[#eef0f5] min-h-screen relative overflow-hidden shadow-2xl sm:border-x sm:border-slate-200">
         
-        <main className="px-5 pt-8 pb-32 h-full overflow-y-auto no-scrollbar">
+        <main className="px-5 pt-8 pb-32 h-full overflow-y-auto overflow-x-hidden no-scrollbar">
           {/* Top Banner Card */}
           <div className="relative w-full h-36 rounded-2xl overflow-hidden mb-8 shadow-sm bg-slate-900">
             <Image 
@@ -100,20 +105,48 @@ export default function AppHome() {
               <div className="space-y-0">
                 {filteredCards.map(({ card, code }, idx) => (
                   <div key={idx}>
-                    <div className="flex items-center justify-between py-3">
+                    <Link 
+                      href={`/details?code=${code.code}`}
+                      className="flex items-center justify-between py-3 hover:bg-slate-50/80 transition-colors rounded-xl px-2 -mx-2 group cursor-pointer"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          code.isRedeemed ? 'bg-orange-100' : 'bg-slate-800'
-                        }`}>
-                          {code.isRedeemed ? (
-                             <CheckCircle2 className="w-5 h-5 text-orange-500" />
+                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 relative bg-slate-50 border border-slate-200/60 flex items-center justify-center shadow-xs">
+                          {card.logoUrl ? (
+                            <Image 
+                              src={card.logoUrl} 
+                              alt={card.name} 
+                              fill 
+                              sizes="48px" 
+                              unoptimized 
+                              className="object-contain p-2" 
+                            />
+                          ) : card.bgImage ? (
+                            <Image 
+                              src={card.bgImage} 
+                              alt={card.name} 
+                              fill 
+                              sizes="48px" 
+                              unoptimized 
+                              className="object-cover" 
+                            />
                           ) : (
-                             <Utensils className="w-5 h-5 text-white" />
+                            <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                              <Utensils className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                          {code.isRedeemed && (
+                            <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center border-2 border-white">
+                              <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={3} />
+                            </div>
                           )}
                         </div>
                         <div>
-                          <div className="text-[15px] font-semibold text-slate-800">
-                            {code.isRedeemed ? 'Redeemed' : 'Added Gift Card'}
+                          <div className="text-[15px] font-semibold text-slate-800 group-hover:text-[#694C9D] transition-colors">
+                            {code.isRedeemed 
+                              ? 'Fully Redeemed' 
+                              : (code.redeemedAmount && code.redeemedAmount > 0)
+                                ? 'Partially Redeemed'
+                                : 'Added Gift Card'}
                           </div>
                           <div className="text-[12px] text-slate-500 leading-tight">
                             {card.name}
@@ -122,19 +155,23 @@ export default function AppHome() {
                       </div>
                       <div className="text-right">
                         <div className={`text-[15px] font-bold ${code.isRedeemed ? 'text-slate-900' : 'text-[#694C9D]'}`}>
-                          {code.isRedeemed ? '-' : '+'}₦{card.value.toLocaleString()}
+                          {code.isRedeemed 
+                            ? `-₦${(code.redeemedAmount || card.value).toLocaleString()}` 
+                            : `₦${(typeof code.currentBalance === 'number' ? code.currentBalance : card.value).toLocaleString()}`}
                         </div>
                         <div className="text-[11px] text-slate-400 font-medium">
                           {code.isRedeemed && code.redeemedAt 
                             ? new Date(code.redeemedAt).toLocaleDateString()
-                            : code.claimedAt 
-                              ? new Date(code.claimedAt).toLocaleDateString()
-                              : 'Just now'}
+                            : (typeof code.currentBalance === 'number' && code.currentBalance < card.value)
+                              ? `₦${code.currentBalance.toLocaleString()} left`
+                              : code.claimedAt 
+                                ? new Date(code.claimedAt).toLocaleDateString()
+                                : 'Just now'}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                     {idx < filteredCards.length - 1 && (
-                      <div className="h-[1px] bg-slate-100 w-full ml-14"></div>
+                      <div className="h-[1px] bg-slate-100 ml-14"></div>
                     )}
                   </div>
                 ))}

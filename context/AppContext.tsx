@@ -9,6 +9,8 @@ export interface GiftCardCode {
   claimedAt: string | null;
   isRedeemed: boolean;
   redeemedAt: string | null;
+  currentBalance?: number;
+  redeemedAmount?: number;
 }
 
 export interface GiftCard {
@@ -25,11 +27,21 @@ export interface GiftCard {
   createdAt: string;
 }
 
+export interface RedeemResult {
+  success: boolean;
+  message: string;
+  card?: GiftCard;
+  code?: GiftCardCode;
+  redeemedAmount?: number;
+  remainingBalance?: number;
+  isFullyRedeemed?: boolean;
+}
+
 interface AppContextType {
   vendorCards: GiftCard[];
   createCard: (card: Omit<GiftCard, "id" | "codes" | "createdAt">) => string;
   claimCode: (codeStr: string, userName: string) => { success: boolean; message: string; card?: GiftCard };
-  redeemCode: (codeStr: string) => { success: boolean; message: string; card?: GiftCard };
+  redeemCode: (codeStr: string, amount?: number) => RedeemResult;
   getUserCards: (userName: string) => { card: GiftCard; code: GiftCardCode }[];
 }
 
@@ -50,7 +62,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("valutex_cards");
     if (stored) {
       try {
-        setVendorCards(JSON.parse(stored));
+        const parsed: GiftCard[] = JSON.parse(stored);
+        // Clean any expired blob URLs from older sessions
+        const cleaned = parsed.map(c => ({
+          ...c,
+          bgImage: c.bgImage && c.bgImage.startsWith("blob:") ? "/burger-fries.jpg" : (c.bgImage || "/burger-fries.jpg"),
+          logoUrl: c.logoUrl && c.logoUrl.startsWith("blob:") ? undefined : c.logoUrl,
+        }));
+        setVendorCards(cleaned);
       } catch (e) {
         console.error("Failed to parse stored cards", e);
       }
@@ -117,11 +136,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return { success: true, message: "Code Verified!", card: claimedCard };
   };
 
-  const redeemCode = (codeStr: string) => {
+  const redeemCode = (codeStr: string, amount?: number): RedeemResult => {
     let found = false;
     let notClaimed = false;
     let alreadyRedeemed = false;
+    let excessAmount = false;
+    let availableBal = 0;
     let redeemedCard: GiftCard | undefined;
+    let updatedCodeObj: GiftCardCode | undefined;
+    let redeemedAmt = 0;
+    let remBal = 0;
+    let isFull = false;
 
     const newCards = vendorCards.map((card) => {
       const updatedCodes = card.codes.map((codeObj) => {
@@ -131,16 +156,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             notClaimed = true;
             return codeObj;
           }
-          if (codeObj.isRedeemed) {
+
+          const currentBalance = typeof codeObj.currentBalance === 'number' 
+            ? codeObj.currentBalance 
+            : (codeObj.isRedeemed ? 0 : card.value);
+
+          availableBal = currentBalance;
+
+          if (codeObj.isRedeemed || currentBalance <= 0) {
             alreadyRedeemed = true;
             return codeObj;
           }
+
+          const targetAmount = (amount && amount > 0) ? amount : currentBalance;
+          if (targetAmount > currentBalance) {
+            excessAmount = true;
+            return codeObj;
+          }
+
           redeemedCard = card;
-          return {
+          redeemedAmt = targetAmount;
+          remBal = currentBalance - targetAmount;
+          isFull = remBal <= 0;
+
+          const updated: GiftCardCode = {
             ...codeObj,
-            isRedeemed: true,
+            currentBalance: remBal,
+            redeemedAmount: (codeObj.redeemedAmount || 0) + targetAmount,
+            isRedeemed: isFull,
             redeemedAt: new Date().toISOString(),
           };
+          updatedCodeObj = updated;
+          return updated;
         }
         return codeObj;
       });
@@ -149,10 +196,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     if (!found) return { success: false, message: "Invalid gift card code." };
     if (notClaimed) return { success: false, message: "You must add this card to your wallet first." };
-    if (alreadyRedeemed) return { success: false, message: "Gift card has already been redeemed." };
+    if (alreadyRedeemed) return { success: false, message: "Gift card has already been fully redeemed." };
+    if (excessAmount) return { success: false, message: `Amount exceeds available balance of ₦${availableBal.toLocaleString()}.` };
 
     setVendorCards(newCards);
-    return { success: true, message: "Card Redeemed Successfully!", card: redeemedCard };
+    return { 
+      success: true, 
+      message: isFull ? "Card Fully Redeemed!" : "Partial Redemption Successful!", 
+      card: redeemedCard,
+      code: updatedCodeObj,
+      redeemedAmount: redeemedAmt,
+      remainingBalance: remBal,
+      isFullyRedeemed: isFull
+    };
   };
 
   const getUserCards = (userName: string) => {

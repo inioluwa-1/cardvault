@@ -31,7 +31,7 @@ export default function VendorSendPage() {
         </div>
 
         {/* Content */}
-        <main className="px-5 pb-32 h-[calc(100vh-140px)] overflow-y-auto no-scrollbar">
+        <main className="px-5 pb-32 h-[calc(100vh-140px)] overflow-y-auto overflow-x-hidden no-scrollbar">
           
           <div className="space-y-0">
             {vendorCards.length === 0 && (
@@ -44,10 +44,11 @@ export default function VendorSendPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-[52px] h-[52px] rounded-[12px] overflow-hidden shrink-0 relative shadow-sm border border-slate-200/50">
                       <Image 
-                        src={card.bgImage} 
+                        src={card.bgImage || "/burger-fries.jpg"} 
                         alt={card.name} 
                         fill 
                         sizes="52px"
+                        unoptimized
                         className="object-cover" 
                       />
                     </div>
@@ -67,7 +68,7 @@ export default function VendorSendPage() {
                   </button>
                 </div>
                 {/* Divider (except last item) */}
-                {index < vendorCards.length - 1 && <div className="h-[1px] bg-slate-200/70 w-full ml-1"></div>}
+                {index < vendorCards.length - 1 && <div className="h-[1px] bg-slate-200/70 ml-1"></div>}
               </div>
             ))}
           </div>

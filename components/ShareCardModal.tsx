@@ -57,6 +57,7 @@ export function ShareCardModal({ isOpen, onClose, card }: ShareCardModalProps) {
             alt="Background"
             fill
             sizes="(max-width: 768px) 100vw, 400px"
+            unoptimized
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
@@ -65,7 +66,7 @@ export function ShareCardModal({ isOpen, onClose, card }: ShareCardModalProps) {
             <div className="flex justify-between items-start w-full">
               {card?.logoUrl ? (
                 <div className="bg-white/90 backdrop-blur-md w-8 h-8 rounded-full border border-white/10 relative overflow-hidden mt-1">
-                  <Image src={card.logoUrl} alt="Logo" fill sizes="32px" className="object-cover p-1" />
+                  <Image src={card.logoUrl} alt="Logo" fill sizes="32px" className="object-cover p-1" unoptimized />
                 </div>
               ) : (
                 <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 mt-1">

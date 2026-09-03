@@ -9,7 +9,7 @@ import { useAppContext, GiftCard } from "@/context/AppContext";
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { claimCode, redeemCode } = useAppContext();
+  const { claimCode, redeemCode, vendorCards } = useAppContext();
   
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -23,9 +23,15 @@ export function BottomNav() {
 
   // Redeem Card State
   const [redeemCodeStr, setRedeemCodeStr] = useState("");
+  const [redeemAmount, setRedeemAmount] = useState("");
   const [redeemError, setRedeemError] = useState("");
   const [isRedeemSuccessOpen, setIsRedeemSuccessOpen] = useState(false);
   const [redeemedCard, setRedeemedCard] = useState<GiftCard | null>(null);
+  const [redeemResultMeta, setRedeemResultMeta] = useState<{ redeemedAmount: number; remainingBalance: number; isFullyRedeemed: boolean }>({
+    redeemedAmount: 0,
+    remainingBalance: 0,
+    isFullyRedeemed: true,
+  });
 
   useEffect(() => {
     const handleOpenAdd = () => setIsAddOpen(true);
@@ -62,18 +68,44 @@ export function BottomNav() {
       setRedeemError("Please enter a gift card number to proceed.");
       return;
     }
+
+    const amountNum = redeemAmount.trim() ? Number(redeemAmount.trim()) : undefined;
+    if (redeemAmount.trim() && (isNaN(Number(redeemAmount.trim())) || Number(redeemAmount.trim()) <= 0)) {
+      setRedeemError("Please enter a valid positive amount to redeem.");
+      return;
+    }
     
-    const result = redeemCode(redeemCodeStr.trim());
+    const result = redeemCode(redeemCodeStr.trim(), amountNum);
     if (result.success && result.card) {
       setRedeemedCard(result.card);
+      setRedeemResultMeta({
+        redeemedAmount: result.redeemedAmount || result.card.value,
+        remainingBalance: result.remainingBalance ?? 0,
+        isFullyRedeemed: result.isFullyRedeemed ?? true,
+      });
       setRedeemError("");
       setIsRedeemOpen(false);
       setIsRedeemSuccessOpen(true);
       setRedeemCodeStr("");
+      setRedeemAmount("");
     } else {
       setRedeemError(result.message);
     }
   };
+
+  const trimmedCode = redeemCodeStr.trim();
+  let matchedCardBalance: number | null = null;
+  if (trimmedCode) {
+    for (const card of vendorCards) {
+      const codeObj = card.codes.find(c => c.code === trimmedCode);
+      if (codeObj) {
+        matchedCardBalance = typeof codeObj.currentBalance === 'number' 
+          ? codeObj.currentBalance 
+          : (codeObj.isRedeemed ? 0 : card.value);
+        break;
+      }
+    }
+  }
 
   return (
     <>
@@ -128,9 +160,42 @@ export function BottomNav() {
                   value={redeemCodeStr}
                   onChange={e => setRedeemCodeStr(e.target.value)}
                   placeholder="Enter the gift card number you want to redeem"
-                  rows={3}
-                  className="w-full bg-white border border-transparent rounded-xl px-4 py-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#694C9D]/20 shadow-sm resize-none font-mono"
+                  rows={2}
+                  className="w-full bg-white border border-transparent rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#694C9D]/20 shadow-sm resize-none font-mono text-sm"
                 />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-medium text-slate-900">Amount to Redeem (₦)</label>
+                  {matchedCardBalance !== null && (
+                    <span className="text-xs text-[#694C9D] font-medium">
+                      Available: ₦{matchedCardBalance.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400 text-sm">₦</span>
+                  <input 
+                    type="number"
+                    value={redeemAmount}
+                    onChange={e => setRedeemAmount(e.target.value)}
+                    placeholder={matchedCardBalance !== null ? `Max ₦${matchedCardBalance.toLocaleString()} (or leave empty for full)` : "Leave empty to redeem full balance"}
+                    className="w-full bg-white border border-transparent rounded-xl pl-9 pr-24 py-3.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#694C9D]/20 shadow-sm text-sm"
+                  />
+                  {matchedCardBalance !== null && matchedCardBalance > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setRedeemAmount(String(matchedCardBalance))}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-[#efe8fa] hover:bg-[#e4d8f5] text-[#694C9D] text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors active:scale-95"
+                    >
+                      Use Max
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5 px-1">
+                  Optional: specify an amount or leave empty to redeem the entire balance.
+                </p>
               </div>
 
               <div className="pt-2">
@@ -213,7 +278,7 @@ export function BottomNav() {
             <div className="w-full bg-slate-100/60 rounded-[20px] p-5 mb-6">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 relative bg-slate-200">
-                  <Image src={claimedCard.bgImage} alt={claimedCard.name} fill sizes="48px" className="object-cover" />
+                  <Image src={claimedCard.bgImage || "/burger-fries.jpg"} alt={claimedCard.name} fill sizes="48px" className="object-cover" unoptimized />
                 </div>
                 <div>
                   <div className="text-[13px] text-slate-500 font-medium">Card</div>
@@ -263,13 +328,28 @@ export function BottomNav() {
               <CheckCircle2 className="w-10 h-10 text-green-500" strokeWidth={2.5} />
             </div>
 
-            <h2 className="text-[22px] font-bold text-slate-900 mb-2">Congratulations!</h2>
-            <p className="text-slate-600 text-[15px] mb-6 text-center">
-              You have successfully redeemed your <strong>{redeemedCard.name}</strong> gift card.
+            <h2 className="text-[22px] font-bold text-slate-900 mb-2">
+              {redeemResultMeta.isFullyRedeemed ? "Fully Redeemed!" : "Redeemed Successfully!"}
+            </h2>
+            <p className="text-slate-600 text-[14px] mb-5 text-center">
+              You redeemed <strong className="text-slate-900">₦{redeemResultMeta.redeemedAmount.toLocaleString()}</strong> from your <strong>{redeemedCard.name}</strong> gift card.
             </p>
 
+            <div className="w-full bg-white rounded-2xl p-4 mb-6 shadow-xs border border-slate-100">
+              <div className="flex justify-between items-center text-sm py-2 border-b border-slate-50">
+                <span className="text-slate-500">Amount Redeemed</span>
+                <span className="font-bold text-slate-900">₦{redeemResultMeta.redeemedAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm py-2 pt-2.5">
+                <span className="text-slate-500">Remaining Balance</span>
+                <span className={`font-bold ${redeemResultMeta.remainingBalance > 0 ? "text-[#694C9D]" : "text-slate-400"}`}>
+                  ₦{redeemResultMeta.remainingBalance.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
             <button onClick={() => setIsRedeemSuccessOpen(false)} className="w-full bg-[#694C9D] text-white font-medium rounded-[16px] py-4 hover:bg-[#52337a] transition-colors shadow-sm active:scale-[0.98]">
-              Close
+              Done
             </button>
             
           </div>

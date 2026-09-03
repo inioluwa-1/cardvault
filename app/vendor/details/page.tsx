@@ -134,11 +134,12 @@ function VendorCardDetailsContent() {
               {/* Card Preview */}
               <div className="block relative w-full h-[220px] rounded-[20px] overflow-hidden shadow-xl shadow-black/10 group bg-slate-900 mt-2">
                 <Image 
-                  src={card.bgImage} 
+                  src={card.bgImage || "/burger-fries.jpg"} 
                   alt="Background"
                   fill
                   sizes="(max-width: 768px) 100vw, 400px"
                   priority
+                  unoptimized
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
@@ -147,7 +148,7 @@ function VendorCardDetailsContent() {
                   <div className="flex justify-between items-start w-full">
                     {card.logoUrl ? (
                       <div className="bg-white/90 backdrop-blur-md w-10 h-10 rounded-full border border-white/10 relative overflow-hidden mt-1">
-                        <Image src={card.logoUrl} alt="Logo" fill sizes="40px" className="object-cover p-1.5" />
+                        <Image src={card.logoUrl} alt="Logo" fill sizes="40px" className="object-cover p-1.5" unoptimized />
                       </div>
                     ) : (
                       <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
