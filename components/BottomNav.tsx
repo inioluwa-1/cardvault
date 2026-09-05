@@ -121,9 +121,9 @@ export function BottomNav() {
         </div>
         
         <div className="bg-white rounded-t-[32px] px-8 py-5 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.04)] pb-8 sm:pb-6 relative z-0">
-          <Link href="/" className={`flex flex-col items-center gap-1.5 transition-opacity w-16 ${pathname === "/" ? "opacity-100" : "opacity-60 hover:opacity-100"}`}>
-            <Home className={`w-6 h-6 ${pathname === "/" ? "text-slate-800" : "text-slate-500"}`} strokeWidth={1.5} />
-            <span className={`text-[11px] font-medium ${pathname === "/" ? "text-slate-600" : "text-slate-500"}`}>Home</span>
+          <Link href="/user" className={`flex flex-col items-center gap-1.5 transition-opacity w-16 ${pathname === "/user" ? "opacity-100" : "opacity-60 hover:opacity-100"}`}>
+            <Home className={`w-6 h-6 ${pathname === "/user" ? "text-slate-800" : "text-slate-500"}`} strokeWidth={1.5} />
+            <span className={`text-[11px] font-medium ${pathname === "/user" ? "text-slate-600" : "text-slate-500"}`}>Home</span>
           </Link>
           <button onClick={() => setIsRedeemOpen(true)} className="flex flex-col items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity w-16">
             <Gift className="w-6 h-6 text-slate-500" strokeWidth={1.5} />
