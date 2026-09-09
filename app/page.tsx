@@ -39,7 +39,7 @@ export default function LandingPage() {
               <path d="M2 10h20" />
               <path d="M6 15h4" />
             </svg>
-            <span>Valutex</span>
+            <span>CardVault</span>
           </a>
 
           <nav className="nav-links">

@@ -15,8 +15,8 @@ const playfair = Playfair_Display({
 import { AppProvider } from "@/context/AppContext";
 
 export const metadata: Metadata = {
-  title: "Valutex | Gift Card Platform for African Vendors",
-  description: "Create, sell, and manage custom gift cards for your customers with Valutex, the premier gift card app for African vendors.",
+  title: "CardVault | Gift Card Platform for African Vendors",
+  description: "Create, sell, and manage custom gift cards for your customers with CardVault, the premier gift card app for African vendors.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

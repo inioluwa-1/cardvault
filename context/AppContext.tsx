@@ -59,7 +59,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Load from LocalStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("valutex_cards");
+    const stored = localStorage.getItem("cardvault_cards") || localStorage.getItem("valutex_cards");
     if (stored) {
       try {
         const parsed: GiftCard[] = JSON.parse(stored);
@@ -80,7 +80,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Save to LocalStorage on change
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("valutex_cards", JSON.stringify(vendorCards));
+      localStorage.setItem("cardvault_cards", JSON.stringify(vendorCards));
     }
   }, [vendorCards, isLoaded]);
 

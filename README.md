@@ -1,6 +1,6 @@
-# Valutex 🎁💳
+# CardVault 🎁💳
 
-**Valutex** is a modern, responsive digital gift card platform engineered for seamless gift card creation, multi-channel distribution, wallet management, and flexible redemptions. It delivers an end-to-end experience tailored for both **Merchants/Vendors** and **Consumers**.
+**CardVault** is a modern, responsive digital gift card platform engineered for seamless gift card creation, multi-channel distribution, wallet management, and flexible redemptions. It delivers an end-to-end experience tailored for both **Merchants/Vendors** and **Consumers**.
 
 ---
 
@@ -62,7 +62,7 @@
 ## 📂 Project Structure
 
 ```
-valutex/
+cardvault/
 ├── app/
 │   ├── layout.tsx              # Root layout with AppProvider
 │   ├── globals.css             # Global Tailwind utilities and scrollbar suppression
@@ -105,8 +105,8 @@ valutex/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/valutex.git
-   cd valutex
+   git clone https://github.com/your-username/cardvault.git
+   cd cardvault
    ```
 
 2. Install dependencies:
