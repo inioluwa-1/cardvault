@@ -18,9 +18,12 @@ export const metadata: Metadata = {
   title: "CardVault | Gift Card Platform for African Vendors",
   description: "Create, sell, and manage custom gift cards for your customers with CardVault, the premier gift card app for African vendors.",
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/favicon-black.png" },
+      { url: "/favicon.ico" }
+    ],
+    shortcut: "/favicon-black.png",
+    apple: "/favicon-black.png",
   },
   openGraph: {
     title: "CardVault | Gift Card Platform for African Vendors",
@@ -29,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "CardVault",
     images: [
       {
-        url: "/og-image.png",
+        url: "/favicon-black.png",
         width: 800,
         height: 800,
         alt: "CardVault Logo",
@@ -42,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "CardVault | Gift Card Platform for African Vendors",
     description: "Create, sell, and manage custom gift cards for your customers with CardVault, the premier gift card app for African vendors.",
-    images: ["/og-image.png"],
+    images: ["/favicon-black.png"],
   },
 };
 
