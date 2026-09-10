@@ -148,15 +148,17 @@
 }
 
 .landing-page .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 11px;
+  gap: 4px;
 }
 
 .landing-page .brand img {
-  width: 26px;
-  height: 26px;
-  filter: brightness(0) invert(1);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  margin-right: -2px;
 }
 
 .landing-page .brand span {

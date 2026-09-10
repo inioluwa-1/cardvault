@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import "./landing.css";
 
 export default function LandingPage() {
@@ -34,11 +35,7 @@ export default function LandingPage() {
       <header>
         <div className="wrap nav">
           <a className="brand" href="#top">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="3" />
-              <path d="M2 10h20" />
-              <path d="M6 15h4" />
-            </svg>
+            <Image src="/cardvault-logo.png" alt="CardVault Logo" width={32} height={32} unoptimized priority />
             <span>CardVault</span>
           </a>
 
@@ -668,11 +665,7 @@ export default function LandingPage() {
           <div className="foot-grid">
             <div className="foot-brand">
               <a className="brand" href="#top">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="3" />
-                  <path d="M2 10h20" />
-                  <path d="M6 15h4" />
-                </svg>
+                <Image src="/cardvault-logo.png" alt="CardVault Logo" width={32} height={32} unoptimized />
                 <span>CardVault</span>
               </a>
               <p>Business Value Infrastructure for African businesses — issue it, wallet it, redeem it, anywhere.</p>
